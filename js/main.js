@@ -373,3 +373,410 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// Classe pour gérer le système de filtrage
+class ProductFilter {
+    constructor() {
+        this.products = [];
+        this.filteredProducts = [];
+        this.searchTerm = '';
+        this.selectedCategories = [];
+        this.priceRange = 'all';
+        this.init();
+    }
+
+    init() {
+        // Récupérer tous les produits du DOM
+        this.getAllProducts();
+        
+        // Initialiser les écouteurs d'événements
+        this.setupEventListeners();
+        
+        // Afficher le nombre initial de produits
+        this.updateProductCount();
+    }
+
+    getAllProducts() {
+        const productElements = document.querySelectorAll('.product-card');
+        this.products = Array.from(productElements).map(card => {
+            return {
+                element: card,
+                name: card.querySelector('.product-name')?.textContent.toLowerCase() || '',
+                category: card.dataset.category || '',
+                price: parseFloat(card.dataset.price) || 0,
+                description: card.querySelector('p')?.textContent.toLowerCase() || ''
+            };
+        });
+        this.filteredProducts = [...this.products];
+    }
+
+    setupEventListeners() {
+        // Recherche
+        const searchInput = document.getElementById('product-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchTerm = e.target.value.toLowerCase();
+                this.applyFilters();
+            });
+        }
+
+        // Filtres de catégorie
+        const categoryFilters = document.querySelectorAll('.category-filter');
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('change', (e) => {
+                const category = e.target.value;
+                if (e.target.checked) {
+                    if (!this.selectedCategories.includes(category)) {
+                        this.selectedCategories.push(category);
+                    }
+                } else {
+                    this.selectedCategories = this.selectedCategories.filter(c => c !== category);
+                }
+                this.applyFilters();
+            });
+        });
+
+        // Filtres de prix
+        const priceFilters = document.querySelectorAll('.price-filter');
+        priceFilters.forEach(filter => {
+            filter.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.priceRange = e.target.value;
+                    this.applyFilters();
+                }
+            });
+        });
+
+        // Bouton de réinitialisation
+        const clearButton = document.getElementById('clear-filters');
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                this.clearFilters();
+            });
+        }
+    }
+
+    applyFilters() {
+        this.filteredProducts = this.products.filter(product => {
+            // Filtre de recherche
+            const matchesSearch = this.searchTerm === '' || 
+                product.name.includes(this.searchTerm) || 
+                product.description.includes(this.searchTerm);
+
+            // Filtre de catégorie
+            const matchesCategory = this.selectedCategories.length === 0 || 
+                this.selectedCategories.includes(product.category);
+
+            // Filtre de prix
+            const matchesPrice = this.checkPriceRange(product.price);
+
+            return matchesSearch && matchesCategory && matchesPrice;
+        });
+
+        this.displayProducts();
+        this.updateProductCount();
+    }
+
+    checkPriceRange(price) {
+        if (this.priceRange === 'all') return true;
+
+        const [min, max] = this.priceRange.split('-').map(Number);
+        return price >= min && price <= max;
+    }
+
+    displayProducts() {
+        // Masquer tous les produits
+        this.products.forEach(product => {
+            product.element.style.display = 'none';
+            product.element.classList.add('opacity-0');
+        });
+
+        // Afficher les produits filtrés avec animation
+        this.filteredProducts.forEach((product, index) => {
+            setTimeout(() => {
+                product.element.style.display = 'block';
+                setTimeout(() => {
+                    product.element.classList.remove('opacity-0');
+                    product.element.classList.add('opacity-100', 'transition-opacity', 'duration-300');
+                }, 50);
+            }, index * 50); // Animation décalée pour un effet cascade
+        });
+
+        // Afficher un message si aucun produit n'est trouvé
+        this.handleNoResults();
+    }
+
+    handleNoResults() {
+        const productGrid = document.getElementById('product-grid');
+        let noResultsMessage = document.getElementById('no-results-message');
+
+        if (this.filteredProducts.length === 0) {
+            if (!noResultsMessage) {
+                noResultsMessage = document.createElement('div');
+                noResultsMessage.id = 'no-results-message';
+                noResultsMessage.className = 'col-span-full text-center py-12';
+                noResultsMessage.innerHTML = `
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-8">
+                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Aucun produit trouvé
+                        </h3>
+                        <p class="text-gray-500 dark:text-gray-400">
+                            Essayez de modifier vos critères de recherche ou de filtrage
+                        </p>
+                    </div>
+                `;
+                productGrid.appendChild(noResultsMessage);
+            }
+            noResultsMessage.style.display = 'block';
+        } else if (noResultsMessage) {
+            noResultsMessage.style.display = 'none';
+        }
+    }
+
+    updateProductCount() {
+        const countElement = document.getElementById('filtered-count');
+        if (countElement) {
+            countElement.textContent = this.filteredProducts.length;
+            
+            // Animation du compteur
+            countElement.classList.add('animate-pulse');
+            setTimeout(() => {
+                countElement.classList.remove('animate-pulse');
+            }, 500);
+        }
+    }
+
+    clearFilters() {
+        // Réinitialiser la recherche
+        const searchInput = document.getElementById('product-search');
+        if (searchInput) {
+            searchInput.value = '';
+            this.searchTerm = '';
+        }
+
+        // Réinitialiser les catégories
+        document.querySelectorAll('.category-filter').forEach(filter => {
+            filter.checked = false;
+        });
+        this.selectedCategories = [];
+
+        // Réinitialiser le prix
+        const allPriceFilter = document.querySelector('.price-filter[value="all"]');
+        if (allPriceFilter) {
+            allPriceFilter.checked = true;
+        }
+        this.priceRange = 'all';
+
+        // Appliquer les filtres réinitialisés
+        this.applyFilters();
+
+        // Feedback visuel
+        this.showNotification('Filtres réinitialisés', 'info');
+    }
+
+    showNotification(message, type = 'info') {
+        // Utiliser la fonction showToast existante si elle est disponible
+        if (typeof ecommerce !== 'undefined' && ecommerce.showToast) {
+            ecommerce.showToast(message, type);
+        }
+    }
+}
+
+// Système de tri des produits
+class ProductSorter {
+    constructor(filter) {
+        this.filter = filter;
+        this.setupSortingOptions();
+    }
+
+    setupSortingOptions() {
+        // Créer le menu de tri s'il n'existe pas
+        this.createSortMenu();
+        
+        // Ajouter les écouteurs d'événements
+        const sortSelect = document.getElementById('sort-products');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.sortProducts(e.target.value);
+            });
+        }
+    }
+
+    createSortMenu() {
+        const filterSection = document.querySelector('aside');
+        if (!filterSection || document.getElementById('sort-products')) return;
+
+        const sortDiv = document.createElement('div');
+        sortDiv.className = 'mb-6';
+        sortDiv.innerHTML = `
+            <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">Trier par</h4>
+            <select id="sort-products" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-moroccan-gold">
+                <option value="default">Par défaut</option>
+                <option value="price-asc">Prix croissant</option>
+                <option value="price-desc">Prix décroissant</option>
+                <option value="name-asc">Nom (A-Z)</option>
+                <option value="name-desc">Nom (Z-A)</option>
+            </select>
+        `;
+
+        // Insérer après les filtres de prix
+        const priceFilter = filterSection.querySelector('.mb-6:last-of-type');
+        filterSection.insertBefore(sortDiv, priceFilter.nextSibling);
+    }
+
+    sortProducts(sortType) {
+        switch (sortType) {
+            case 'price-asc':
+                this.filter.filteredProducts.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                this.filter.filteredProducts.sort((a, b) => b.price - a.price);
+                break;
+            case 'name-asc':
+                this.filter.filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-desc':
+                this.filter.filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+            default:
+                // Retour à l'ordre original
+                this.filter.filteredProducts = this.filter.products.filter(p => 
+                    this.filter.filteredProducts.includes(p)
+                );
+        }
+
+        this.filter.displayProducts();
+    }
+}
+
+// URL Filter State Management
+class FilterStateManager {
+    constructor(filter) {
+        this.filter = filter;
+        this.init();
+    }
+
+    init() {
+        // Charger l'état des filtres depuis l'URL
+        this.loadFromURL();
+        
+        // Écouter les changements d'URL
+        window.addEventListener('popstate', () => {
+            this.loadFromURL();
+        });
+    }
+
+    saveToURL() {
+        const params = new URLSearchParams();
+        
+        if (this.filter.searchTerm) {
+            params.set('search', this.filter.searchTerm);
+        }
+        
+        if (this.filter.selectedCategories.length > 0) {
+            params.set('categories', this.filter.selectedCategories.join(','));
+        }
+        
+        if (this.filter.priceRange && this.filter.priceRange !== 'all') {
+            params.set('price', this.filter.priceRange);
+        }
+
+        const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.pushState({}, '', newURL);
+    }
+
+    loadFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Charger la recherche
+        const search = params.get('search');
+        if (search) {
+            const searchInput = document.getElementById('product-search');
+            if (searchInput) {
+                searchInput.value = search;
+                this.filter.searchTerm = search;
+            }
+        }
+        
+        // Charger les catégories
+        const categories = params.get('categories');
+        if (categories) {
+            const categoryArray = categories.split(',');
+            categoryArray.forEach(category => {
+                const checkbox = document.querySelector(`.category-filter[value="${category}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            this.filter.selectedCategories = categoryArray;
+        }
+        
+        // Charger le filtre de prix
+        const price = params.get('price');
+        if (price) {
+            const priceRadio = document.querySelector(`.price-filter[value="${price}"]`);
+            if (priceRadio) {
+                priceRadio.checked = true;
+                this.filter.priceRange = price;
+            }
+        }
+        
+        this.filter.applyFilters();
+    }
+}
+
+// Initialisation du système de filtrage
+document.addEventListener('DOMContentLoaded', () => {
+    // Vérifier si nous sommes sur la page des produits
+    const productGrid = document.getElementById('product-grid');
+    if (productGrid) {
+        // Initialiser le filtre
+        const productFilter = new ProductFilter();
+        
+        // Initialiser le système de tri
+        const productSorter = new ProductSorter(productFilter);
+        
+        // Initialiser la gestion de l'état de l'URL
+        const filterStateManager = new FilterStateManager(productFilter);
+        
+        // Exposer le filtre globalement pour debug si nécessaire
+        window.molBazaarFilter = productFilter;
+        
+        // Ajouter la gestion de l'état de l'URL lors des changements de filtres
+        const originalApplyFilters = productFilter.applyFilters.bind(productFilter);
+        productFilter.applyFilters = function() {
+            originalApplyFilters();
+            filterStateManager.saveToURL();
+        };
+    }
+});
+
+// Fonction utilitaire pour le debounce (éviter trop d'appels lors de la frappe)
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Appliquer le debounce à la recherche
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('product-search');
+    if (searchInput && window.molBazaarFilter) {
+        const debouncedSearch = debounce((e) => {
+            window.molBazaarFilter.searchTerm = e.target.value.toLowerCase();
+            window.molBazaarFilter.applyFilters();
+        }, 300);
+        
+        searchInput.removeEventListener('input', window.molBazaarFilter.applyFilters);
+        searchInput.addEventListener('input', debouncedSearch);
+    }
+});

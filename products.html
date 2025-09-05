@@ -129,59 +129,78 @@
                 <h2 class="text-3xl md:text-4xl font-bold font-arabic mb-8 text-center text-gray-900 dark:text-white">Tous les Produits</h2>
                 
                 <div class="flex flex-col md:flex-row gap-8">
-                    <!-- Sidebar Filters -->
-                    <aside class="w-full md:w-1/4 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <!-- Section Sidebar Filters modifiée -->
+                    <aside class="w-full md:w-1/4 bg-white-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
                         <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Filtrer par</h3>
                         
                         <!-- Search Bar -->
                         <div class="mb-6">
-                            <input type="text" id="product-search" placeholder="Rechercher un produit..." class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-moroccan-gold">
+                            <input type="text" 
+                                id="product-search" 
+                                placeholder="Rechercher un produit..." 
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-moroccan-gold">
                         </div>
 
                         <!-- Category Filter -->
                         <div class="mb-6">
                             <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">Catégorie</h4>
                             <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="poterie">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="poterie" data-category="poterie">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">Poterie</span>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="tapis">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="tapis" data-category="tapis">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">Tapis</span>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="bijoux">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="bijoux" data-category="bijoux">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">Bijoux</span>
                                 </label>
-                                <label class="flex items-center">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="maroquinerie">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-moroccan-red rounded category-filter" value="maroquinerie" data-category="maroquinerie">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">Maroquinerie</span>
                                 </label>
                             </div>
                         </div>
 
                         <!-- Price Range Filter -->
-                        <div>
+                        <div class="mb-6">
                             <h4 class="font-semibold mb-3 text-gray-900 dark:text-white">Gamme de Prix</h4>
                             <div class="space-y-2">
-                                <label class="flex items-center">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="price" class="form-radio h-5 w-5 text-moroccan-red price-filter" value="all" checked>
+                                    <span class="ml-2 text-gray-700 dark:text-gray-300">Tous les prix</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
                                     <input type="radio" name="price" class="form-radio h-5 w-5 text-moroccan-red price-filter" value="0-50">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">0€ - 50€</span>
                                 </label>
-                                <label class="flex items-center">
+                                <label class="flex items-center cursor-pointer">
                                     <input type="radio" name="price" class="form-radio h-5 w-5 text-moroccan-red price-filter" value="51-100">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">51€ - 100€</span>
                                 </label>
-                                <label class="flex items-center">
+                                <label class="flex items-center cursor-pointer">
                                     <input type="radio" name="price" class="form-radio h-5 w-5 text-moroccan-red price-filter" value="101-200">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">101€ - 200€</span>
                                 </label>
-                                <label class="flex items-center">
+                                <label class="flex items-center cursor-pointer">
                                     <input type="radio" name="price" class="form-radio h-5 w-5 text-moroccan-red price-filter" value="201-9999">
                                     <span class="ml-2 text-gray-700 dark:text-gray-300">201€ et plus</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <button id="clear-filters" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200">
+                            Réinitialiser les filtres
+                        </button>
+                        
+                        <!-- Products Count -->
+                        <div class="mt-4 text-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                <span id="filtered-count">0</span> produit(s) trouvé(s)
+                            </span>
                         </div>
                     </aside>
 
