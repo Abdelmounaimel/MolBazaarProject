@@ -99,8 +99,7 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
 
 Clonez le dépôt :
 
-git clone [https://github.com/votre-nom-utilisateur/molbazaar.git](https://github.com/votre-nom-utilisateur/molbazaar.git)
-cd molbazaar
+git clone [https://github.com/Abdelmounaimel/MolBazaarProject.git]
 
 Installez les dépendances PHP :
 
